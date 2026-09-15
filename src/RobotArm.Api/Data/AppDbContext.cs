@@ -10,6 +10,7 @@ public class AppDbContext : DbContext
     {
     }
 
+    public DbSet<User> Users { get; set; }
     public DbSet<Robot> Robots { get; set; }
     public DbSet<RobotCommand> RobotCommands { get; set; }
 }
