@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RobotArm.Api.Data;
@@ -31,6 +32,7 @@ public class AuthController : ControllerBase
 
     // POST: api/auth/register
     [HttpPost("register")]
+    [EnableRateLimiting("auth")]
     [EndpointSummary("Registreer een gebruiker")]
     [EndpointDescription("Maakt een gebruiker aan en slaat het wachtwoord veilig gehasht op.")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -93,6 +95,7 @@ public class AuthController : ControllerBase
 
     // POST: api/auth/login
     [HttpPost("login")]
+    [EnableRateLimiting("auth")]
     [EndpointSummary("Login")]
     [EndpointDescription("Logt een gebruiker in en geeft een JWT-token terug.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -150,6 +153,7 @@ public class AuthController : ControllerBase
 
     // POST: api/auth/refresh
     [HttpPost("refresh")]
+    [EnableRateLimiting("auth")]
     [EndpointSummary("Vernieuw een JWT-token")]
     [EndpointDescription("Vervangt een geldig refresh token door een nieuw JWT-token en refresh token.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
