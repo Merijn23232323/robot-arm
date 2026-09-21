@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RobotArm.Api.Data;
@@ -20,6 +21,8 @@ public class RobotsController : ControllerBase
     [EndpointSummary("Haal alle robots op")]
     [EndpointDescription("Geeft alle robots terug die in het systeem zijn geregistreerd.")]
     [ProducesResponseType(typeof(IEnumerable<Robot>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Robot>>> GetRobots()
     {
@@ -32,7 +35,9 @@ public class RobotsController : ControllerBase
     [EndpointSummary("Haal een robot op")]
     [EndpointDescription("Geeft een robot terug op basis van het robot-ID.")]
     [ProducesResponseType(typeof(Robot), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<Robot>> GetRobot(int id)
     {
@@ -51,9 +56,12 @@ public class RobotsController : ControllerBase
 
     // POST: api/robots
     [EndpointSummary("Maak een robot aan")]
-    [EndpointDescription("Registreert een nieuwe robot in het systeem.")]
+    [EndpointDescription("Registreert een nieuwe robot in het systeem. Alleen een Admin mag dit uitvoeren.")]
     [ProducesResponseType(typeof(Robot), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<Robot>> CreateRobot(Robot robot)
     {
@@ -77,10 +85,13 @@ public class RobotsController : ControllerBase
 
     // PUT: api/robots/5
     [EndpointSummary("Werk een robot bij")]
-    [EndpointDescription("Wijzigt de gegevens van een bestaande robot.")]
+    [EndpointDescription("Wijzigt de gegevens van een bestaande robot. Alleen een Admin mag dit uitvoeren.")]
     [ProducesResponseType(typeof(Robot), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateRobot(int id, Robot robot)
     {
@@ -120,9 +131,12 @@ public class RobotsController : ControllerBase
 
     // DELETE: api/robots/5
     [EndpointSummary("Verwijder een robot")]
-    [EndpointDescription("Verwijdert een robot op basis van het robot-ID.")]
+    [EndpointDescription("Verwijdert een robot op basis van het robot-ID. Alleen een Admin mag dit uitvoeren.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteRobot(int id)
     {

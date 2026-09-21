@@ -14,6 +14,9 @@ public class User
 
     public DateTime? RefreshTokenExpiresAt { get; set; }
 
+    // Rol voor autorisatie
+    public string Role { get; set; } = "User";
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public List<Robot> Robots { get; set; } = new();

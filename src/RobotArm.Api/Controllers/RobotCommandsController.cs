@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RobotArm.Api.Data;
 using RobotArm.Api.Models;
@@ -20,6 +21,8 @@ public class RobotCommandsController : ControllerBase
     [EndpointSummary("Haal alle commands op")]
     [EndpointDescription("Geeft alle robotcommando's terug die in het systeem zijn opgeslagen.")]
     [ProducesResponseType(typeof(IEnumerable<RobotCommand>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<RobotCommand>>> GetCommands()
     {
@@ -33,7 +36,9 @@ public class RobotCommandsController : ControllerBase
     [EndpointSummary("Haal een command op")]
     [EndpointDescription("Geeft één robotcommando terug op basis van het command-ID.")]
     [ProducesResponseType(typeof(RobotCommand), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<RobotCommand>> GetCommand(int id)
     {
@@ -56,11 +61,12 @@ public class RobotCommandsController : ControllerBase
     [EndpointDescription("Maakt een nieuw commando aan voor een bestaande robot.")]
     [ProducesResponseType(typeof(RobotCommand), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<RobotCommand>> CreateCommand(
         RobotCommand command)
     {
-        // Controleren of de robot bestaat
         var robotExists = await _context.Robots
             .AnyAsync(r => r.Id == command.RobotId);
 
@@ -87,7 +93,9 @@ public class RobotCommandsController : ControllerBase
     [EndpointDescription("Wijzigt een bestaand robotcommando.")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateCommand(
         int id,
@@ -125,9 +133,12 @@ public class RobotCommandsController : ControllerBase
 
     // DELETE: api/commands/5
     [EndpointSummary("Verwijder een command")]
-    [EndpointDescription("Verwijdert een robotcommando op basis van het command-ID.")]
+    [EndpointDescription("Verwijdert een robotcommando op basis van het command-ID. Alleen een Admin mag dit uitvoeren.")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCommand(int id)
     {
