@@ -17,6 +17,9 @@ public class RobotsController : ControllerBase
     }
 
     // GET: api/robots
+    [EndpointSummary("Haal alle robots op")]
+    [EndpointDescription("Geeft alle robots terug die in het systeem zijn geregistreerd.")]
+    [ProducesResponseType(typeof(IEnumerable<Robot>), StatusCodes.Status200OK)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Robot>>> GetRobots()
     {
@@ -26,6 +29,10 @@ public class RobotsController : ControllerBase
     }
 
     // GET: api/robots/5
+    [EndpointSummary("Haal een robot op")]
+    [EndpointDescription("Geeft een robot terug op basis van het robot-ID.")]
+    [ProducesResponseType(typeof(Robot), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpGet("{id}")]
     public async Task<ActionResult<Robot>> GetRobot(int id)
     {
@@ -43,6 +50,10 @@ public class RobotsController : ControllerBase
     }
 
     // POST: api/robots
+    [EndpointSummary("Maak een robot aan")]
+    [EndpointDescription("Registreert een nieuwe robot in het systeem.")]
+    [ProducesResponseType(typeof(Robot), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost]
     public async Task<ActionResult<Robot>> CreateRobot(Robot robot)
     {
@@ -65,6 +76,11 @@ public class RobotsController : ControllerBase
     }
 
     // PUT: api/robots/5
+    [EndpointSummary("Werk een robot bij")]
+    [EndpointDescription("Wijzigt de gegevens van een bestaande robot.")]
+    [ProducesResponseType(typeof(Robot), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateRobot(int id, Robot robot)
     {
@@ -103,6 +119,10 @@ public class RobotsController : ControllerBase
     }
 
     // DELETE: api/robots/5
+    [EndpointSummary("Verwijder een robot")]
+    [EndpointDescription("Verwijdert een robot op basis van het robot-ID.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteRobot(int id)
     {

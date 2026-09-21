@@ -7,7 +7,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // OpenAPI
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, _, _) =>
+    {
+        document.Info.Title = "Robot Arm API";
+        document.Info.Version = "v1";
+
+        return Task.CompletedTask;
+    });
+});
 
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
