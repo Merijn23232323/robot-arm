@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -8,6 +9,7 @@ using RobotArm.Api.Models.Auth;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Security.Cryptography;
 
 namespace RobotArm.Api.Controllers;
 
@@ -132,16 +134,67 @@ public class AuthController : ControllerBase
             });
         }
 
-        var token = CreateJwtToken(user);
+        var (token, refreshToken) = CreateTokenPair(user);
+
+        user.RefreshTokenHash = HashRefreshToken(refreshToken);
+        user.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
+        await _context.SaveChangesAsync();
 
         return Ok(new
         {
             message = "Login succesvol.",
-            token
+            token,
+            refreshToken
         });
     }
 
-    private string CreateJwtToken(User user)
+    // POST: api/auth/refresh
+    [HttpPost("refresh")]
+    [EndpointSummary("Vernieuw een JWT-token")]
+    [EndpointDescription("Vervangt een geldig refresh token door een nieuw JWT-token en refresh token.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Refresh(RefreshRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+        {
+            return BadRequest(new { message = "Refresh token is verplicht." });
+        }
+
+        var refreshTokenHash = HashRefreshToken(request.RefreshToken);
+        var user = await _context.Users
+            .SingleOrDefaultAsync(candidate => candidate.RefreshTokenHash == refreshTokenHash);
+
+        if (user == null || user.RefreshTokenExpiresAt <= DateTime.UtcNow)
+        {
+            return Unauthorized(new { message = "Refresh token is ongeldig of verlopen." });
+        }
+
+        var (token, refreshToken) = CreateTokenPair(user);
+        user.RefreshTokenHash = HashRefreshToken(refreshToken);
+        user.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { token, refreshToken });
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    [EndpointSummary("Haal de ingelogde gebruiker op")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Me()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var user = await _context.Users.FindAsync(int.Parse(userId!));
+
+        return user == null
+            ? Unauthorized()
+            : Ok(new { user.Id, user.Username, user.Email });
+    }
+
+    private (string Token, string RefreshToken) CreateTokenPair(User user)
     {
         var claims = new[]
         {
@@ -169,7 +222,15 @@ public class AuthController : ControllerBase
             signingCredentials: credentials
         );
 
-        return new JwtSecurityTokenHandler()
-            .WriteToken(token);
+        var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
+        var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+        return (accessToken, refreshToken);
+    }
+
+    private static string HashRefreshToken(string refreshToken)
+    {
+        return Convert.ToHexString(
+            SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken)));
     }
 }
