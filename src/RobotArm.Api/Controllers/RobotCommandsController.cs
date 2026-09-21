@@ -17,6 +17,9 @@ public class RobotCommandsController : ControllerBase
     }
 
     // GET: api/commands
+    [EndpointSummary("Haal alle commands op")]
+    [EndpointDescription("Geeft alle robotcommando's terug die in het systeem zijn opgeslagen.")]
+    [ProducesResponseType(typeof(IEnumerable<RobotCommand>), StatusCodes.Status200OK)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<RobotCommand>>> GetCommands()
     {
@@ -27,6 +30,10 @@ public class RobotCommandsController : ControllerBase
     }
 
     // GET: api/commands/5
+    [EndpointSummary("Haal een command op")]
+    [EndpointDescription("Geeft één robotcommando terug op basis van het command-ID.")]
+    [ProducesResponseType(typeof(RobotCommand), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpGet("{id}")]
     public async Task<ActionResult<RobotCommand>> GetCommand(int id)
     {
@@ -45,6 +52,10 @@ public class RobotCommandsController : ControllerBase
     }
 
     // POST: api/commands
+    [EndpointSummary("Maak een command aan")]
+    [EndpointDescription("Maakt een nieuw commando aan voor een bestaande robot.")]
+    [ProducesResponseType(typeof(RobotCommand), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost]
     public async Task<ActionResult<RobotCommand>> CreateCommand(
         RobotCommand command)
@@ -72,6 +83,11 @@ public class RobotCommandsController : ControllerBase
     }
 
     // PUT: api/commands/5
+    [EndpointSummary("Werk een command bij")]
+    [EndpointDescription("Wijzigt een bestaand robotcommando.")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateCommand(
         int id,
@@ -108,6 +124,10 @@ public class RobotCommandsController : ControllerBase
     }
 
     // DELETE: api/commands/5
+    [EndpointSummary("Verwijder een command")]
+    [EndpointDescription("Verwijdert een robotcommando op basis van het command-ID.")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCommand(int id)
     {

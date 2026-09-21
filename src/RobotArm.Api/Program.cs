@@ -29,7 +29,14 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    // OpenAPI JSON
     app.MapOpenApi();
+
+    // Swagger UI
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "Robot Arm API v1");
+    });
 }
 
 app.UseHttpsRedirection();
