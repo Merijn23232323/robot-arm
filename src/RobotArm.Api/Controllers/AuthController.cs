@@ -27,6 +27,68 @@ public class AuthController : ControllerBase
         _configuration = configuration;
     }
 
+    // POST: api/auth/register
+    [HttpPost("register")]
+    [EndpointSummary("Registreer een gebruiker")]
+    [EndpointDescription("Maakt een gebruiker aan en slaat het wachtwoord veilig gehasht op.")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Register(RegisterRequest request)
+    {
+        var username = request.Username.Trim();
+        var email = request.Email.Trim().ToLowerInvariant();
+
+        if (string.IsNullOrWhiteSpace(username) ||
+            string.IsNullOrWhiteSpace(email) ||
+            string.IsNullOrWhiteSpace(request.Password))
+        {
+            return BadRequest(new
+            {
+                message = "Gebruikersnaam, e-mailadres en wachtwoord zijn verplicht."
+            });
+        }
+
+        if (await _context.Users.AnyAsync(user => user.Username == username))
+        {
+            return Conflict(new
+            {
+                message = "Deze gebruikersnaam is al in gebruik."
+            });
+        }
+
+        if (await _context.Users.AnyAsync(user => user.Email == email))
+        {
+            return Conflict(new
+            {
+                message = "Dit e-mailadres is al geregistreerd."
+            });
+        }
+
+        var user = new User
+        {
+            Username = username,
+            Email = email
+        };
+
+        user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        return StatusCode(StatusCodes.Status201Created, new
+        {
+            message = "Registratie succesvol.",
+            user = new
+            {
+                user.Id,
+                user.Username,
+                user.Email,
+                user.CreatedAt
+            }
+        });
+    }
+
     // POST: api/auth/login
     [HttpPost("login")]
     [EndpointSummary("Login")]
