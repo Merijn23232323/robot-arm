@@ -107,6 +107,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
@@ -114,3 +117,7 @@ app.UseRateLimiter();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program
+{
+}

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RobotArm.Api.Models;
 
@@ -9,6 +10,7 @@ public class RobotCommand
     [Range(1, int.MaxValue)]
     public int RobotId { get; set; }
 
+    [ValidateNever]
     public Robot Robot { get; set; } = null!;
 
     [Required]
