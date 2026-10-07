@@ -13,6 +13,63 @@ const values = Object.fromEntries(
     servos.map((servo) => [servo, 90])
 );
 
+const simulationAngles = {
+    shoulder: 90,
+    elbow: 90
+};
+
+let simulationFrame = null;
+
+function updateArmSimulation() {
+    const shoulderAngle = simulationAngles.shoulder;
+    const elbowAngle = simulationAngles.elbow;
+    const shoulder = { x: 180, y: 232 };
+    const upperArmLength = 100;
+    const lowerArmLength = 80;
+    const upperArmRadians = (shoulderAngle - 90) * Math.PI / 180;
+    const elbow = {
+        x: shoulder.x + Math.cos(upperArmRadians) * upperArmLength,
+        y: shoulder.y - Math.sin(upperArmRadians) * upperArmLength
+    };
+    const lowerArmRadians = upperArmRadians + (elbowAngle - 90) * Math.PI / 180;
+    const wrist = {
+        x: elbow.x + Math.cos(lowerArmRadians) * lowerArmLength,
+        y: elbow.y - Math.sin(lowerArmRadians) * lowerArmLength
+    };
+
+    document.querySelector('#simulation-upper-arm').setAttribute('x2', elbow.x);
+    document.querySelector('#simulation-upper-arm').setAttribute('y2', elbow.y);
+    document.querySelector('#simulation-lower-arm').setAttribute('x1', elbow.x);
+    document.querySelector('#simulation-lower-arm').setAttribute('y1', elbow.y);
+    document.querySelector('#simulation-lower-arm').setAttribute('x2', wrist.x);
+    document.querySelector('#simulation-lower-arm').setAttribute('y2', wrist.y);
+    document.querySelector('#simulation-elbow').setAttribute('cx', elbow.x);
+    document.querySelector('#simulation-elbow').setAttribute('cy', elbow.y);
+    document.querySelector('#shoulder-angle-label').textContent = `Shoulder ${Math.round(shoulderAngle)} deg`;
+    document.querySelector('#elbow-angle-label').textContent = `Elbow ${Math.round(elbowAngle)} deg`;
+    document.querySelector('#angle-readout').textContent = `Shoulder ${Math.round(shoulderAngle)} deg`;
+}
+
+function animateArmSimulation() {
+    const shoulderDifference = values.Shoulder - simulationAngles.shoulder;
+    const elbowDifference = values.Elbow - simulationAngles.elbow;
+    simulationAngles.shoulder += shoulderDifference * 0.18;
+    simulationAngles.elbow += elbowDifference * 0.18;
+    updateArmSimulation();
+
+    if (Math.abs(shoulderDifference) > 0.1 || Math.abs(elbowDifference) > 0.1) {
+        simulationFrame = requestAnimationFrame(animateArmSimulation);
+    } else {
+        simulationFrame = null;
+    }
+}
+
+function startArmSimulation() {
+    if (simulationFrame === null) {
+        simulationFrame = requestAnimationFrame(animateArmSimulation);
+    }
+}
+
 
 // ======================================================
 // AUTH ELEMENTS
@@ -472,6 +529,8 @@ function renderServos() {
                         '#angle-readout'
                     ).textContent =
                         `${values[servo]} deg`;
+
+                    startArmSimulation();
                 }
             );
         });
@@ -485,11 +544,6 @@ function renderServos() {
             button.addEventListener(
                 'click',
                 async (event) => {
-
-                    const servo =
-                        event.currentTarget.dataset.sendServo;
-
-                    event.currentTarget.disabled = true;
 
                     try {
 
@@ -861,6 +915,7 @@ robotSelect.addEventListener(
 async function startDashboard() {
 
     renderServos();
+    updateArmSimulation();
 
     await loadData();
 

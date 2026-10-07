@@ -10,20 +10,19 @@ namespace RobotArm.Api.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "Role",
-                table: "Users",
-                type: "nvarchar(max)",
-                nullable: false,
-                defaultValue: "");
+            migrationBuilder.Sql(
+                "IF COL_LENGTH('Users', 'Role') IS NULL " +
+                "ALTER TABLE [Users] ADD [Role] nvarchar(max) NOT NULL CONSTRAINT [DF_Users_Role] DEFAULT N'User'; " +
+                "UPDATE [Users] SET [Role] = N'User' WHERE [Role] IS NULL OR [Role] = N'';");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Role",
-                table: "Users");
+            migrationBuilder.Sql(
+                "IF COL_LENGTH('Users', 'Role') IS NOT NULL " +
+                "ALTER TABLE [Users] DROP CONSTRAINT [DF_Users_Role]; " +
+                "IF COL_LENGTH('Users', 'Role') IS NOT NULL ALTER TABLE [Users] DROP COLUMN [Role];");
         }
     }
 }

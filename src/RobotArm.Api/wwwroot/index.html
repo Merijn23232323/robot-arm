@@ -116,9 +116,20 @@
             </div>
 
             <aside class="visual-panel panel">
-                <div class="panel-heading"><div><p class="eyebrow">LIVE PREVIEW</p><h2>Arm position</h2></div><span class="angle-readout" id="angle-readout">0 deg</span></div>
-                <div class="arm-stage" aria-label="Visuele preview van de robotarm">
-                    <div class="arm-base"></div><div class="arm-joint joint-one"></div><div class="arm-segment segment-one"></div><div class="arm-joint joint-two"></div><div class="arm-segment segment-two"></div><div class="arm-gripper"></div>
+                <div class="panel-heading"><div><p class="eyebrow">LIVE PREVIEW</p><h2>Arm position</h2></div><span class="angle-readout" id="angle-readout">Shoulder 90 deg</span></div>
+                <div class="arm-stage" aria-label="2D-simulatie van de schouder en elleboog van de robotarm">
+                    <svg class="arm-simulation" viewBox="0 0 360 280" role="img" aria-labelledby="simulation-title simulation-description">
+                        <title id="simulation-title">Robotarm simulatie</title>
+                        <desc id="simulation-description">Een vaste basis met een bewegende schouder, bovenarm, elleboog en onderarm.</desc>
+                        <line class="simulation-ground" x1="45" y1="250" x2="315" y2="250"></line>
+                        <rect class="simulation-base" x="135" y="238" width="90" height="16" rx="4"></rect>
+                        <line class="simulation-upper-arm" id="simulation-upper-arm" x1="180" y1="232" x2="180" y2="132"></line>
+                        <line class="simulation-lower-arm" id="simulation-lower-arm" x1="180" y1="132" x2="180" y2="52"></line>
+                        <circle class="simulation-joint" id="simulation-shoulder" cx="180" cy="232" r="13"></circle>
+                        <circle class="simulation-joint" id="simulation-elbow" cx="180" cy="132" r="11"></circle>
+                        <text class="simulation-label" id="shoulder-angle-label" x="18" y="28">Shoulder 90 deg</text>
+                        <text class="simulation-label" id="elbow-angle-label" x="18" y="49">Elbow 90 deg</text>
+                    </svg>
                 </div>
                 <div class="telemetry"><div><span>ACTIVE SERVO</span><strong id="active-servo">Base</strong></div><div><span>LAST UPDATE</span><strong id="last-update">--:--:--</strong></div></div>
             </aside>

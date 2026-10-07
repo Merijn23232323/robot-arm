@@ -16,7 +16,7 @@ namespace RobotArm.Api.Migrations
                 table: "Robots",
                 type: "int",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 1);
 
             migrationBuilder.CreateTable(
                 name: "Users",
@@ -26,12 +26,19 @@ namespace RobotArm.Api.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
                 });
+
+            migrationBuilder.Sql(
+                "SET IDENTITY_INSERT [Users] ON; " +
+                "INSERT INTO [Users] ([Id], [Username], [Email], [CreatedAt], [Role]) " +
+                "VALUES (1, 'system', 'system@robotarm.local', '2026-01-01T00:00:00', 'User'); " +
+                "SET IDENTITY_INSERT [Users] OFF;");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Robots_UserId",
