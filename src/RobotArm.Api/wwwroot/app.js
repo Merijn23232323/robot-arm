@@ -13,60 +13,373 @@ const values = Object.fromEntries(
     servos.map((servo) => [servo, 90])
 );
 
+
+// ======================================================
+// ARM + GRIPPER SIMULATION
+// ======================================================
+
 const simulationAngles = {
     shoulder: 90,
-    elbow: 90
+    elbow: 90,
+    gripper: 90
 };
 
 let simulationFrame = null;
 
+
+// ======================================================
+// ARM SIMULATION
+// ======================================================
+
 function updateArmSimulation() {
+
     const shoulderAngle = simulationAngles.shoulder;
     const elbowAngle = simulationAngles.elbow;
-    const shoulder = { x: 180, y: 232 };
+
+    const shoulder = {
+        x: 180,
+        y: 232
+    };
+
     const upperArmLength = 100;
     const lowerArmLength = 80;
-    const upperArmRadians = (shoulderAngle - 90) * Math.PI / 180;
+
+    const upperArmRadians =
+        (shoulderAngle - 90) * Math.PI / 180;
+
     const elbow = {
-        x: shoulder.x + Math.cos(upperArmRadians) * upperArmLength,
-        y: shoulder.y - Math.sin(upperArmRadians) * upperArmLength
-    };
-    const lowerArmRadians = upperArmRadians + (elbowAngle - 90) * Math.PI / 180;
-    const wrist = {
-        x: elbow.x + Math.cos(lowerArmRadians) * lowerArmLength,
-        y: elbow.y - Math.sin(lowerArmRadians) * lowerArmLength
+        x:
+            shoulder.x +
+            Math.cos(upperArmRadians) *
+            upperArmLength,
+
+        y:
+            shoulder.y -
+            Math.sin(upperArmRadians) *
+            upperArmLength
     };
 
-    document.querySelector('#simulation-upper-arm').setAttribute('x2', elbow.x);
-    document.querySelector('#simulation-upper-arm').setAttribute('y2', elbow.y);
-    document.querySelector('#simulation-lower-arm').setAttribute('x1', elbow.x);
-    document.querySelector('#simulation-lower-arm').setAttribute('y1', elbow.y);
-    document.querySelector('#simulation-lower-arm').setAttribute('x2', wrist.x);
-    document.querySelector('#simulation-lower-arm').setAttribute('y2', wrist.y);
-    document.querySelector('#simulation-elbow').setAttribute('cx', elbow.x);
-    document.querySelector('#simulation-elbow').setAttribute('cy', elbow.y);
-    document.querySelector('#shoulder-angle-label').textContent = `Shoulder ${Math.round(shoulderAngle)} deg`;
-    document.querySelector('#elbow-angle-label').textContent = `Elbow ${Math.round(elbowAngle)} deg`;
-    document.querySelector('#angle-readout').textContent = `Shoulder ${Math.round(shoulderAngle)} deg`;
+    const lowerArmRadians =
+        upperArmRadians +
+        (elbowAngle - 90) *
+        Math.PI / 180;
+
+    const wrist = {
+        x:
+            elbow.x +
+            Math.cos(lowerArmRadians) *
+            lowerArmLength,
+
+        y:
+            elbow.y -
+            Math.sin(lowerArmRadians) *
+            lowerArmLength
+    };
+
+
+    const upperArm =
+        document.querySelector(
+            '#simulation-upper-arm'
+        );
+
+    const lowerArm =
+        document.querySelector(
+            '#simulation-lower-arm'
+        );
+
+    const elbowJoint =
+        document.querySelector(
+            '#simulation-elbow'
+        );
+
+
+    if (upperArm) {
+
+        upperArm.setAttribute(
+            'x2',
+            elbow.x
+        );
+
+        upperArm.setAttribute(
+            'y2',
+            elbow.y
+        );
+    }
+
+
+    if (lowerArm) {
+
+        lowerArm.setAttribute(
+            'x1',
+            elbow.x
+        );
+
+        lowerArm.setAttribute(
+            'y1',
+            elbow.y
+        );
+
+        lowerArm.setAttribute(
+            'x2',
+            wrist.x
+        );
+
+        lowerArm.setAttribute(
+            'y2',
+            wrist.y
+        );
+    }
+
+
+    if (elbowJoint) {
+
+        elbowJoint.setAttribute(
+            'cx',
+            elbow.x
+        );
+
+        elbowJoint.setAttribute(
+            'cy',
+            elbow.y
+        );
+    }
+
+
+    const shoulderLabel =
+        document.querySelector(
+            '#shoulder-angle-label'
+        );
+
+    const elbowLabel =
+        document.querySelector(
+            '#elbow-angle-label'
+        );
+
+
+    if (shoulderLabel) {
+
+        shoulderLabel.textContent =
+            `Shoulder ${Math.round(
+                shoulderAngle
+            )} deg`;
+    }
+
+
+    if (elbowLabel) {
+
+        elbowLabel.textContent =
+            `Elbow ${Math.round(
+                elbowAngle
+            )} deg`;
+    }
+
+
+    // Gripper positie laten meegaan met einde van arm
+    updateGripperSimulation(wrist, lowerArmRadians);
 }
 
+
+// ======================================================
+// GRIPPER / VINGER SIMULATIE
+// ======================================================
+
+function getGripperState(angle) {
+
+    if (angle <= 30) {
+        return "Volledig open";
+    }
+
+    if (angle <= 75) {
+        return "Grotendeels open";
+    }
+
+    if (angle <= 120) {
+        return "Half gesloten";
+    }
+
+    if (angle <= 165) {
+        return "Grotendeels gesloten";
+    }
+
+    return "Volledig gesloten";
+}
+
+
+function updateGripperSimulation(
+    wrist,
+    armRadians
+) {
+
+    const angle =
+        simulationAngles.gripper;
+
+    // 0 graden = helemaal open
+    // 180 graden = helemaal dicht
+    const progress =
+        angle / 180;
+
+    // Opening tussen vingers
+    // Open = ongeveer 30 graden
+    // Dicht = ongeveer 3 graden
+    const fingerOpening =
+        30 - progress * 27;
+
+
+    const leftFinger =
+        document.querySelector(
+            '#simulation-gripper-left'
+        );
+
+    const rightFinger =
+        document.querySelector(
+            '#simulation-gripper-right'
+        );
+
+    const gripperGroup =
+        document.querySelector(
+            '#simulation-gripper'
+        );
+
+
+    // Als je SVG gripper elementen hebt
+    if (gripperGroup) {
+
+        const rotation =
+            armRadians *
+            180 /
+            Math.PI;
+
+        gripperGroup.setAttribute(
+            'transform',
+            `translate(${wrist.x} ${wrist.y}) rotate(${rotation})`
+        );
+    }
+
+
+    if (leftFinger) {
+
+        leftFinger.setAttribute(
+            'transform',
+            `rotate(${-fingerOpening})`
+        );
+    }
+
+
+    if (rightFinger) {
+
+        rightFinger.setAttribute(
+            'transform',
+            `rotate(${fingerOpening})`
+        );
+    }
+
+
+    // Fallback voor oude HTML met .arm-gripper
+    const oldGripper =
+        document.querySelector(
+            '.arm-gripper'
+        );
+
+    if (
+        oldGripper &&
+        !gripperGroup
+    ) {
+
+        const scale =
+            1 -
+            progress * 0.45;
+
+        oldGripper.style.transform =
+            `rotate(20deg) scaleX(${scale})`;
+    }
+
+
+    // Gripper status label
+    const gripperLabel =
+        document.querySelector(
+            '#gripper-state-label'
+        );
+
+    if (gripperLabel) {
+
+        gripperLabel.textContent =
+            `Gripper: ${getGripperState(
+                angle
+            )}`;
+    }
+}
+
+
+// ======================================================
+// ANIMATIE
+// ======================================================
+
 function animateArmSimulation() {
-    const shoulderDifference = values.Shoulder - simulationAngles.shoulder;
-    const elbowDifference = values.Elbow - simulationAngles.elbow;
-    simulationAngles.shoulder += shoulderDifference * 0.18;
-    simulationAngles.elbow += elbowDifference * 0.18;
+
+    const shoulderDifference =
+        values.Shoulder -
+        simulationAngles.shoulder;
+
+    const elbowDifference =
+        values.Elbow -
+        simulationAngles.elbow;
+
+    const gripperDifference =
+        values.Gripper -
+        simulationAngles.gripper;
+
+
+    simulationAngles.shoulder +=
+        shoulderDifference * 0.18;
+
+    simulationAngles.elbow +=
+        elbowDifference * 0.18;
+
+    simulationAngles.gripper +=
+        gripperDifference * 0.18;
+
+
     updateArmSimulation();
 
-    if (Math.abs(shoulderDifference) > 0.1 || Math.abs(elbowDifference) > 0.1) {
-        simulationFrame = requestAnimationFrame(animateArmSimulation);
-    } else {
+
+    if (
+        Math.abs(shoulderDifference) > 0.1 ||
+        Math.abs(elbowDifference) > 0.1 ||
+        Math.abs(gripperDifference) > 0.1
+    ) {
+
+        simulationFrame =
+            requestAnimationFrame(
+                animateArmSimulation
+            );
+    }
+
+    else {
+
+        simulationAngles.shoulder =
+            values.Shoulder;
+
+        simulationAngles.elbow =
+            values.Elbow;
+
+        simulationAngles.gripper =
+            values.Gripper;
+
+        updateArmSimulation();
+
         simulationFrame = null;
     }
 }
 
+
 function startArmSimulation() {
+
     if (simulationFrame === null) {
-        simulationFrame = requestAnimationFrame(animateArmSimulation);
+
+        simulationFrame =
+            requestAnimationFrame(
+                animateArmSimulation
+            );
     }
 }
 
@@ -75,219 +388,343 @@ function startArmSimulation() {
 // AUTH ELEMENTS
 // ======================================================
 
-const authPage = document.getElementById("auth-page");
-const dashboard = document.getElementById("dashboard");
+const authPage =
+    document.getElementById(
+        "auth-page"
+    );
 
-const loginForm = document.getElementById("login-form");
-const registerForm = document.getElementById("register-form");
+const dashboard =
+    document.getElementById(
+        "dashboard"
+    );
 
-const authSwitch = document.getElementById("auth-switch");
-const authTitle = document.getElementById("auth-title");
-const authError = document.getElementById("auth-error");
+const loginForm =
+    document.getElementById(
+        "login-form"
+    );
+
+const registerForm =
+    document.getElementById(
+        "register-form"
+    );
+
+const authSwitch =
+    document.getElementById(
+        "auth-switch"
+    );
+
+const authTitle =
+    document.getElementById(
+        "auth-title"
+    );
+
+const authError =
+    document.getElementById(
+        "auth-error"
+    );
+
 
 let registerMode = false;
+
 let statusInterval = null;
 
 
 // ======================================================
-// AUTH SWITCH LOGIN / REGISTER
+// LOGIN / REGISTER SWITCH
 // ======================================================
 
-authSwitch.addEventListener("click", () => {
+authSwitch.addEventListener(
+    "click",
+    () => {
 
-    registerMode = !registerMode;
+        registerMode =
+            !registerMode;
 
-    loginForm.hidden = registerMode;
-    registerForm.hidden = !registerMode;
+        loginForm.hidden =
+            registerMode;
 
-    authTitle.textContent =
-        registerMode
-            ? "Account aanmaken"
-            : "Inloggen";
+        registerForm.hidden =
+            !registerMode;
 
-    authSwitch.textContent =
-        registerMode
-            ? "Al een account? Inloggen"
-            : "Nog geen account? Registreren";
+        authTitle.textContent =
+            registerMode
+                ? "Account aanmaken"
+                : "Inloggen";
 
-    authError.textContent = "";
-});
+        authSwitch.textContent =
+            registerMode
+                ? "Al een account? Inloggen"
+                : "Nog geen account? Registreren";
+
+        authError.textContent = "";
+    }
+);
 
 
 // ======================================================
 // REGISTER
 // ======================================================
 
-registerForm.addEventListener("submit", async (event) => {
+registerForm.addEventListener(
+    "submit",
+    async (event) => {
 
-    event.preventDefault();
+        event.preventDefault();
 
-    authError.textContent = "";
+        authError.textContent = "";
 
-    try {
+        try {
 
-        const response = await fetch("/api/auth/register", {
-            method: "POST",
+            const response =
+                await fetch(
+                    "/api/auth/register",
+                    {
+                        method: "POST",
 
-            headers: {
-                "Content-Type": "application/json"
-            },
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
 
-            body: JSON.stringify({
-                username:
-                    document.getElementById("register-username").value,
+                        body:
+                            JSON.stringify({
+                                username:
+                                    document
+                                        .getElementById(
+                                            "register-username"
+                                        )
+                                        .value,
 
-                email:
-                    document.getElementById("register-email").value,
+                                email:
+                                    document
+                                        .getElementById(
+                                            "register-email"
+                                        )
+                                        .value,
 
-                password:
-                    document.getElementById("register-password").value
-            })
-        });
+                                password:
+                                    document
+                                        .getElementById(
+                                            "register-password"
+                                        )
+                                        .value
+                            })
+                    }
+                );
 
-        const data = await readResponse(response);
 
-        if (!response.ok) {
+            const data =
+                await readResponse(
+                    response
+                );
+
+
+            if (!response.ok) {
+
+                authError.textContent =
+                    data?.errors?.join(" ") ??
+                    data?.message ??
+                    "Registreren mislukt.";
+
+                return;
+            }
+
+
+            registerMode = false;
+
+            registerForm.hidden = true;
+
+            loginForm.hidden = false;
+
+            authTitle.textContent =
+                "Inloggen";
+
+            authSwitch.textContent =
+                "Nog geen account? Registreren";
 
             authError.textContent =
-                data?.errors?.join(" ") ??
-                data?.message ??
-                "Registreren mislukt.";
+                "Account aangemaakt. Je kunt nu inloggen.";
 
-            return;
+
+            document
+                .getElementById(
+                    "login-email"
+                )
+                .value =
+
+                document
+                    .getElementById(
+                        "register-email"
+                    )
+                    .value;
+
+
+            registerForm.reset();
         }
 
-        // Registratie gelukt -> terug naar login
-        registerMode = false;
+        catch {
 
-        registerForm.hidden = true;
-        loginForm.hidden = false;
-
-        authTitle.textContent = "Inloggen";
-
-        authSwitch.textContent =
-            "Nog geen account? Registreren";
-
-        authError.textContent =
-            "Account aangemaakt. Je kunt nu inloggen.";
-
-        // Email alvast invullen
-        document.getElementById("login-email").value =
-            document.getElementById("register-email").value;
-
-        registerForm.reset();
-
+            authError.textContent =
+                "De API is niet bereikbaar.";
+        }
     }
-    catch (error) {
-
-        authError.textContent =
-            "De API is niet bereikbaar.";
-    }
-});
+);
 
 
 // ======================================================
 // LOGIN
 // ======================================================
 
-loginForm.addEventListener("submit", async (event) => {
+loginForm.addEventListener(
+    "submit",
+    async (event) => {
 
-    event.preventDefault();
+        event.preventDefault();
 
-    authError.textContent = "";
+        authError.textContent = "";
 
-    try {
+        try {
 
-        const response = await fetch("/api/auth/login", {
+            const response =
+                await fetch(
+                    "/api/auth/login",
+                    {
+                        method: "POST",
 
-            method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
 
-            headers: {
-                "Content-Type": "application/json"
-            },
+                        body:
+                            JSON.stringify({
+                                email:
+                                    document
+                                        .getElementById(
+                                            "login-email"
+                                        )
+                                        .value,
 
-            body: JSON.stringify({
-                email:
-                    document.getElementById("login-email").value,
+                                password:
+                                    document
+                                        .getElementById(
+                                            "login-password"
+                                        )
+                                        .value
+                            })
+                    }
+                );
 
-                password:
-                    document.getElementById("login-password").value
-            })
-        });
 
-        const data = await readResponse(response);
+            const data =
+                await readResponse(
+                    response
+                );
 
-        if (!response.ok) {
+
+            if (!response.ok) {
+
+                authError.textContent =
+                    data?.errors?.join(" ") ??
+                    data?.message ??
+                    "Inloggen mislukt.";
+
+                return;
+            }
+
+
+            localStorage.setItem(
+                "token",
+                data.token
+            );
+
+
+            if (data.refreshToken) {
+
+                localStorage.setItem(
+                    "refreshToken",
+                    data.refreshToken
+                );
+            }
+
+
+            showDashboard();
+        }
+
+        catch {
 
             authError.textContent =
-                data?.errors?.join(" ") ??
-                data?.message ??
-                "Inloggen mislukt.";
-
-            return;
+                "De API is niet bereikbaar.";
         }
-
-        // Tokens opslaan
-        localStorage.setItem("token", data.token);
-
-        if (data.refreshToken) {
-            localStorage.setItem(
-                "refreshToken",
-                data.refreshToken
-            );
-        }
-
-        // Dashboard openen
-        showDashboard();
-
     }
-    catch (error) {
-
-        authError.textContent =
-            "De API is niet bereikbaar.";
-    }
-});
+);
 
 
 // ======================================================
 // API FETCH MET JWT
 // ======================================================
 
-async function apiFetch(url, options = {}) {
+async function apiFetch(
+    url,
+    options = {}
+) {
 
-    const token = localStorage.getItem("token");
+    const token =
+        localStorage.getItem(
+            "token"
+        );
+
 
     const headers = {
         ...(options.headers || {})
     };
 
+
     if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
+
+        headers["Authorization"] =
+            `Bearer ${token}`;
     }
 
-    const response = await fetch(url, {
-        ...options,
-        headers
-    });
 
-    // Token ongeldig/verlopen
+    const response =
+        await fetch(
+            url,
+            {
+                ...options,
+                headers
+            }
+        );
+
+
     if (response.status === 401) {
 
-        const refreshed = await tryRefreshToken();
+        const refreshed =
+            await tryRefreshToken();
+
 
         if (refreshed) {
 
             headers["Authorization"] =
-                `Bearer ${localStorage.getItem("token")}`;
+                `Bearer ${localStorage.getItem(
+                    "token"
+                )
+                }`;
 
-            return fetch(url, {
-                ...options,
-                headers
-            });
+
+            return fetch(
+                url,
+                {
+                    ...options,
+                    headers
+                }
+            );
         }
+
 
         logout();
     }
+
 
     return response;
 }
@@ -300,43 +737,61 @@ async function apiFetch(url, options = {}) {
 async function tryRefreshToken() {
 
     const refreshToken =
-        localStorage.getItem("refreshToken");
+        localStorage.getItem(
+            "refreshToken"
+        );
+
 
     if (!refreshToken) {
+
         return false;
     }
 
+
     try {
 
-        const response = await fetch(
-            "/api/auth/refresh",
-            {
-                method: "POST",
+        const response =
+            await fetch(
+                "/api/auth/refresh",
+                {
+                    method: "POST",
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
 
-                body: JSON.stringify({
-                    refreshToken
-                })
-            }
-        );
+                    body:
+                        JSON.stringify({
+                            refreshToken
+                        })
+                }
+            );
+
 
         if (!response.ok) {
+
             return false;
         }
 
-        const data = await readResponse(response);
+
+        const data =
+            await readResponse(
+                response
+            );
+
 
         if (!data?.token) {
+
             return false;
         }
+
 
         localStorage.setItem(
             "token",
             data.token
         );
+
 
         if (data.refreshToken) {
 
@@ -346,9 +801,10 @@ async function tryRefreshToken() {
             );
         }
 
-        return true;
 
+        return true;
     }
+
     catch {
 
         return false;
@@ -357,33 +813,45 @@ async function tryRefreshToken() {
 
 
 // ======================================================
-// RESPONSE VEILIG UITLEZEN
+// RESPONSE UITLEZEN
 // ======================================================
 
-async function readResponse(response) {
+async function readResponse(
+    response
+) {
 
-    const text = await response.text();
+    const text =
+        await response.text();
+
 
     if (!text) {
+
         return null;
     }
 
+
     try {
-        return JSON.parse(text);
+
+        return JSON.parse(
+            text
+        );
     }
+
     catch {
+
         return null;
     }
 }
 
 
 // ======================================================
-// DASHBOARD TONEN
+// DASHBOARD
 // ======================================================
 
 function showDashboard() {
 
     authPage.hidden = true;
+
     dashboard.hidden = false;
 
     startDashboard();
@@ -391,30 +859,42 @@ function showDashboard() {
 
 
 // ======================================================
-// UITLOGGEN
+// LOGOUT
 // ======================================================
 
 function logout() {
 
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
+    localStorage.removeItem(
+        "token"
+    );
+
+    localStorage.removeItem(
+        "refreshToken"
+    );
+
 
     if (statusInterval) {
 
-        clearInterval(statusInterval);
+        clearInterval(
+            statusInterval
+        );
 
         statusInterval = null;
     }
 
+
     dashboard.hidden = true;
+
     authPage.hidden = false;
 
     loginForm.hidden = false;
+
     registerForm.hidden = true;
 
     registerMode = false;
 
-    authTitle.textContent = "Inloggen";
+    authTitle.textContent =
+        "Inloggen";
 
     authSwitch.textContent =
         "Nog geen account? Registreren";
@@ -425,18 +905,36 @@ function logout() {
 // CONNECTION STATUS
 // ======================================================
 
-function setConnection(online, label) {
+function setConnection(
+    online,
+    label
+) {
 
     const connectionLabel =
-        document.querySelector('#connection-label');
+        document.querySelector(
+            '#connection-label'
+        );
 
     const footerStatus =
-        document.querySelector('#footer-status');
+        document.querySelector(
+            '#footer-status'
+        );
 
-    connectionLabel.textContent = label;
 
-    footerStatus.textContent =
-        online ? 'ONLINE' : 'OFFLINE';
+    if (connectionLabel) {
+
+        connectionLabel.textContent =
+            label;
+    }
+
+
+    if (footerStatus) {
+
+        footerStatus.textContent =
+            online
+                ? 'ONLINE'
+                : 'OFFLINE';
+    }
 }
 
 
@@ -446,7 +944,10 @@ function setConnection(online, label) {
 
 function renderServos() {
 
-    servoList.innerHTML = servos.map((servo) => `
+    servoList.innerHTML =
+        servos
+            .map(
+                (servo) => `
 
         <label class="servo-row">
 
@@ -455,7 +956,10 @@ function renderServos() {
                 ${servo}
 
                 <small>
-                    JOINT ${servos.indexOf(servo) + 1}
+                    JOINT ${servos.indexOf(
+                    servo
+                ) + 1
+                    }
                 </small>
 
             </span>
@@ -498,85 +1002,175 @@ function renderServos() {
 
         </label>
 
-    `).join('');
+    `
+            )
+            .join('');
 
 
-    // Slider aanpassen
+    // ==================================================
+    // SLIDERS
+    // ==================================================
+
     servoList
-        .querySelectorAll('input')
-        .forEach((input) => {
+        .querySelectorAll(
+            'input'
+        )
+        .forEach(
+            (input) => {
 
-            input.addEventListener(
-                'input',
-                (event) => {
+                input.addEventListener(
+                    'input',
+                    (event) => {
 
-                    const servo =
-                        event.target.dataset.servo;
-
-                    values[servo] =
-                        Number(event.target.value);
-
-                    document.querySelector(
-                        `[data-value="${servo}"]`
-                    ).textContent =
-                        `${values[servo]} deg`;
-
-                    document.querySelector(
-                        '#active-servo'
-                    ).textContent = servo;
-
-                    document.querySelector(
-                        '#angle-readout'
-                    ).textContent =
-                        `${values[servo]} deg`;
-
-                    startArmSimulation();
-                }
-            );
-        });
+                        const servo =
+                            event
+                                .target
+                                .dataset
+                                .servo;
 
 
-    // Individuele servo versturen
+                        values[servo] =
+                            Number(
+                                event
+                                    .target
+                                    .value
+                            );
+
+
+                        const valueLabel =
+                            document.querySelector(
+                                `[data-value="${servo}"]`
+                            );
+
+
+                        if (valueLabel) {
+
+                            valueLabel.textContent =
+                                `${values[servo]} deg`;
+                        }
+
+
+                        const activeServo =
+                            document.querySelector(
+                                '#active-servo'
+                            );
+
+
+                        if (activeServo) {
+
+                            activeServo.textContent =
+                                servo;
+                        }
+
+
+                        const angleReadout =
+                            document.querySelector(
+                                '#angle-readout'
+                            );
+
+
+                        if (angleReadout) {
+
+                            if (
+                                servo ===
+                                "Gripper"
+                            ) {
+
+                                angleReadout.textContent =
+                                    `Gripper ${values[servo]} deg`;
+                            }
+
+                            else {
+
+                                angleReadout.textContent =
+                                    `${servo} ${values[servo]} deg`;
+                            }
+                        }
+
+
+                        // Arm + vingers bewegen
+                        startArmSimulation();
+                    }
+                );
+            }
+        );
+
+
+    // ==================================================
+    // INDIVIDUELE SERVO VERSTUREN
+    // ==================================================
+
     servoList
-        .querySelectorAll('[data-send-servo]')
-        .forEach((button) => {
+        .querySelectorAll(
+            '[data-send-servo]'
+        )
+        .forEach(
+            (button) => {
 
-            button.addEventListener(
-                'click',
-                async (event) => {
+                button.addEventListener(
+                    'click',
+                    async (event) => {
 
-                    try {
+                        // Dit ontbrak in je vorige versie
+                        const servo =
+                            event
+                                .currentTarget
+                                .dataset
+                                .sendServo;
 
-                        await sendCommand(
-                            servo,
-                            values[servo]
-                        );
 
-                        feedback.textContent =
-                            `${servo} (${values[servo]} deg) is naar de API gestuurd.`;
+                        event
+                            .currentTarget
+                            .disabled = true;
 
-                        document.querySelector(
-                            '#last-update'
-                        ).textContent =
-                            new Date()
-                                .toLocaleTimeString('nl-NL');
 
-                        await loadData();
+                        try {
 
+                            await sendCommand(
+                                servo,
+                                values[servo]
+                            );
+
+
+                            feedback.textContent =
+                                `${servo} (${values[servo]} deg) is naar de API gestuurd.`;
+
+
+                            const lastUpdate =
+                                document.querySelector(
+                                    '#last-update'
+                                );
+
+
+                            if (lastUpdate) {
+
+                                lastUpdate.textContent =
+                                    new Date()
+                                        .toLocaleTimeString(
+                                            'nl-NL'
+                                        );
+                            }
+
+
+                            await loadData();
+                        }
+
+                        catch (error) {
+
+                            feedback.textContent =
+                                error.message;
+                        }
+
+                        finally {
+
+                            event
+                                .currentTarget
+                                .disabled = false;
+                        }
                     }
-                    catch (error) {
-
-                        feedback.textContent =
-                            error.message;
-                    }
-                    finally {
-
-                        event.currentTarget.disabled =
-                            false;
-                    }
-                }
-            );
-        });
+                );
+            }
+        );
 }
 
 
@@ -591,15 +1185,21 @@ async function loadData() {
         const selectedRobotId =
             robotSelect.value;
 
+
         const [
             robotsResponse,
             commandsResponse
-        ] = await Promise.all([
+        ] =
+            await Promise.all([
+                apiFetch(
+                    '/api/robots'
+                ),
 
-            apiFetch('/api/robots'),
+                apiFetch(
+                    '/api/commands'
+                )
+            ]);
 
-            apiFetch('/api/commands')
-        ]);
 
         if (!robotsResponse.ok) {
 
@@ -608,27 +1208,39 @@ async function loadData() {
             );
         }
 
+
         const robots =
             await robotsResponse.json();
 
-        // Robots in dropdown
+
         robotSelect.innerHTML =
             robots.length
-                ? robots.map((robot) => `
+
+                ? robots
+                    .map(
+                        (robot) => `
+
                     <option value="${robot.id}">
                         ${robot.name}
                     </option>
-                `).join('')
+
+                `
+                    )
+                    .join('')
+
                 : '<option value="">Geen robot geregistreerd</option>';
 
 
-        // Vorige selectie behouden
         if (
             selectedRobotId &&
             robots.some(
-                robot =>
-                    String(robot.id) ===
-                    String(selectedRobotId)
+                (robot) =>
+                    String(
+                        robot.id
+                    ) ===
+                    String(
+                        selectedRobotId
+                    )
             )
         ) {
 
@@ -637,26 +1249,29 @@ async function loadData() {
         }
 
 
-        // Status bepalen op basis van geselecteerde robot
-        updateRobotStatus(robots);
+        updateRobotStatus(
+            robots
+        );
 
 
-        // Commands laden
         if (commandsResponse.ok) {
 
             const commands =
                 await commandsResponse.json();
 
-            renderCommands(commands);
+            renderCommands(
+                commands
+            );
         }
-
     }
+
     catch (error) {
 
         setConnection(
             false,
             'Verbinding mislukt'
         );
+
 
         feedback.textContent =
             error.message ||
@@ -669,15 +1284,22 @@ async function loadData() {
 // ROBOT STATUS
 // ======================================================
 
-function updateRobotStatus(robots) {
+function updateRobotStatus(
+    robots
+) {
 
     const robotId =
-        Number(robotSelect.value);
+        Number(
+            robotSelect.value
+        );
+
 
     const robot =
         robots.find(
-            robot => robot.id === robotId
+            (robot) =>
+                robot.id === robotId
         );
+
 
     if (!robot) {
 
@@ -689,6 +1311,7 @@ function updateRobotStatus(robots) {
         return;
     }
 
+
     if (robot.isOnline) {
 
         setConnection(
@@ -696,6 +1319,7 @@ function updateRobotStatus(robots) {
             `${robot.name} online`
         );
     }
+
     else {
 
         setConnection(
@@ -707,47 +1331,56 @@ function updateRobotStatus(robots) {
 
 
 // ======================================================
-// REALTIME / POLLING
+// REALTIME POLLING
 // ======================================================
 
 function startRealtimeUpdates() {
 
-    // Voorkom meerdere intervals
     if (statusInterval) {
 
-        clearInterval(statusInterval);
+        clearInterval(
+            statusInterval
+        );
     }
 
-    // Iedere 3 seconden opnieuw ophalen
-    statusInterval = setInterval(
-        async () => {
 
-            // Alleen uitvoeren wanneer dashboard zichtbaar is
-            if (!dashboard.hidden) {
+    statusInterval =
+        setInterval(
+            async () => {
 
-                await loadData();
-            }
+                if (
+                    !dashboard.hidden
+                ) {
 
-        },
-        3000
-    );
+                    await loadData();
+                }
+            },
+
+            3000
+        );
 }
 
 
 // ======================================================
-// COMMANDS TONEN
+// COMMAND LOG
 // ======================================================
 
-function renderCommands(commands) {
+function renderCommands(
+    commands
+) {
 
     const recent =
         commands
             .slice(-6)
             .reverse();
 
+
     commandTable.innerHTML =
         recent.length
-            ? recent.map((command) => `
+
+            ? recent
+                .map(
+                    (command) => `
 
                 <div class="command-row">
 
@@ -761,13 +1394,19 @@ function renderCommands(commands) {
 
                     <span>
                         ${new Date(
-                command.createdAt
-            ).toLocaleTimeString('nl-NL')}
+                        command.createdAt
+                    )
+                            .toLocaleTimeString(
+                                'nl-NL'
+                            )
+                        }
                     </span>
 
                 </div>
 
-            `).join('')
+            `
+                )
+                .join('')
 
             : '<p class="empty-state">Nog geen commando\'s gevonden.</p>';
 }
@@ -783,7 +1422,10 @@ async function sendCommand(
 ) {
 
     const robotId =
-        Number(robotSelect.value);
+        Number(
+            robotSelect.value
+        );
+
 
     if (!robotId) {
 
@@ -791,6 +1433,7 @@ async function sendCommand(
             'Selecteer eerst een robot'
         );
     }
+
 
     const response =
         await apiFetch(
@@ -803,18 +1446,23 @@ async function sendCommand(
                         'application/json'
                 },
 
-                body: JSON.stringify({
-                    robotId,
-                    servo,
-                    angle
-                })
+                body:
+                    JSON.stringify({
+                        robotId,
+                        servo,
+                        angle
+                    })
             }
         );
+
 
     if (!response.ok) {
 
         const data =
-            await readResponse(response);
+            await readResponse(
+                response
+            );
+
 
         throw new Error(
             data?.message ??
@@ -830,7 +1478,9 @@ async function sendCommand(
 // ======================================================
 
 document
-    .querySelector('#send-all')
+    .querySelector(
+        '#send-all'
+    )
     .addEventListener(
         'click',
         async () => {
@@ -839,7 +1489,10 @@ document
 
                 await Promise.all(
 
-                    Object.entries(values)
+                    Object
+                        .entries(
+                            values
+                        )
                         .map(
                             ([servo, angle]) =>
                                 sendCommand(
@@ -849,18 +1502,30 @@ document
                         )
                 );
 
+
                 feedback.textContent =
                     'Alle servo-waarden zijn verzonden.';
 
-                document.querySelector(
-                    '#last-update'
-                ).textContent =
-                    new Date()
-                        .toLocaleTimeString('nl-NL');
+
+                const lastUpdate =
+                    document.querySelector(
+                        '#last-update'
+                    );
+
+
+                if (lastUpdate) {
+
+                    lastUpdate.textContent =
+                        new Date()
+                            .toLocaleTimeString(
+                                'nl-NL'
+                            );
+                }
+
 
                 await loadData();
-
             }
+
             catch (error) {
 
                 feedback.textContent =
@@ -875,7 +1540,9 @@ document
 // ======================================================
 
 document
-    .querySelector('#emergency-button')
+    .querySelector(
+        '#emergency-button'
+    )
     .addEventListener(
         'click',
         () => {
@@ -891,7 +1558,9 @@ document
 // ======================================================
 
 document
-    .querySelector('#refresh-button')
+    .querySelector(
+        '#refresh-button'
+    )
     .addEventListener(
         'click',
         loadData
@@ -899,7 +1568,7 @@ document
 
 
 // ======================================================
-// ROBOT SELECTIE VERANDERD
+// ROBOT SELECTIE
 // ======================================================
 
 robotSelect.addEventListener(
@@ -909,12 +1578,22 @@ robotSelect.addEventListener(
 
 
 // ======================================================
-// DASHBOARD STARTEN
+// DASHBOARD START
 // ======================================================
 
 async function startDashboard() {
 
     renderServos();
+
+    simulationAngles.shoulder =
+        values.Shoulder;
+
+    simulationAngles.elbow =
+        values.Elbow;
+
+    simulationAngles.gripper =
+        values.Gripper;
+
     updateArmSimulation();
 
     await loadData();
@@ -930,24 +1609,28 @@ async function startDashboard() {
 async function initialiseApp() {
 
     const token =
-        localStorage.getItem("token");
+        localStorage.getItem(
+            "token"
+        );
 
-    // Geen token -> loginpagina
+
     if (!token) {
 
         dashboard.hidden = true;
+
         authPage.hidden = false;
 
         return;
     }
 
-    // Controleren of opgeslagen JWT nog geldig is
+
     try {
 
         const response =
             await apiFetch(
                 "/api/auth/me"
             );
+
 
         if (!response.ok) {
 
@@ -956,9 +1639,10 @@ async function initialiseApp() {
             return;
         }
 
-        showDashboard();
 
+        showDashboard();
     }
+
     catch {
 
         logout();

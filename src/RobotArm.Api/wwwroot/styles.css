@@ -104,5 +104,70 @@ input[type=range] { width: 100%; accent-color: var(--green); }.range-labels { di
     font-size: 12px;
     font-weight: 600;
 }
+/* =========================================
+   ROBOT ARM SVG SIMULATION
+========================================= */
+
+.arm-simulation {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.simulation-ground {
+    stroke: #cbd9ce;
+    stroke-width: 2;
+}
+
+.simulation-base {
+    fill: var(--ink);
+}
+
+.simulation-upper-arm,
+.simulation-lower-arm {
+    stroke: var(--ink);
+    stroke-width: 16;
+    stroke-linecap: round;
+}
+
+.simulation-lower-arm {
+    stroke: var(--green);
+}
+
+.simulation-joint {
+    fill: var(--lime);
+    stroke: var(--ink);
+    stroke-width: 6;
+}
+
+.simulation-wrist {
+    fill: var(--lime);
+    stroke: var(--ink);
+    stroke-width: 4;
+}
+
+.simulation-gripper-connector {
+    stroke: var(--ink);
+    stroke-width: 9;
+    stroke-linecap: round;
+}
+
+.simulation-finger {
+    stroke: var(--ink);
+    stroke-width: 8;
+    stroke-linecap: round;
+}
+
+.simulation-finger-tip {
+    stroke: var(--green);
+    stroke-width: 7;
+    stroke-linecap: round;
+}
+
+.simulation-label {
+    fill: var(--green);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+}
 .history-panel { margin-top: 18px; padding: 25px; }.text-button { border: 0; background: transparent; color: var(--green); font-size: 12px; font-weight: 600; }.command-table { margin-top: 20px; }.command-row { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 1px solid var(--line); padding: 13px 4px; font: 12px 'DM Mono', monospace; }.command-row span:last-child { text-align: right; color: var(--muted); }.empty-state { color: var(--muted); font-size: 13px; }.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); } footer { padding: 24px 4px 0; } footer b { color: var(--green); font-weight: 500; }
 @media (max-width: 720px) { .app-shell { width: min(100% - 28px, 560px); padding-top: 18px; }.intro-row { margin: 54px 0 29px; display: block; }.intro-row h1 { font-size: 46px; }.emergency-button { margin-top: 26px; }.workspace { grid-template-columns: 1fr; }.control-panel, .visual-panel, .history-panel { padding: 19px; }.servo-row { grid-template-columns: 86px 1fr 52px 45px; gap: 9px; }.arm-stage { height: 240px; }.simulation-label { font-size: 10px; } footer { padding-bottom: 18px; } }

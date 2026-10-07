@@ -1,146 +1,703 @@
 <!doctype html>
 <html lang="nl">
+
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
     <title>Robot Arm Control</title>
-    <link rel="stylesheet" href="styles.css">
+
+    <link rel="stylesheet"
+          href="styles.css">
 </head>
+
 <body>
-    <section class="auth-page" id="auth-page">
+
+    <!-- ==================================================
+         LOGIN / REGISTER
+    =================================================== -->
+
+    <section class="auth-page"
+             id="auth-page">
+
         <div class="auth-card">
+
             <div class="auth-logo">
-                <span class="brand-mark">RA</span>
+
+                <span class="brand-mark">
+                    RA
+                </span>
+
                 <div>
-                    <strong>Robot Arm</strong>
-                    <small>CONTROL DECK</small>
+                    <strong>
+                        Robot Arm
+                    </strong>
+
+                    <small>
+                        CONTROL DECK
+                    </small>
                 </div>
+
             </div>
 
-            <p class="eyebrow">SECURE ACCESS</p>
-            <h1 id="auth-title">Inloggen</h1>
+
+            <p class="eyebrow">
+                SECURE ACCESS
+            </p>
+
+            <h1 id="auth-title">
+                Inloggen
+            </h1>
+
             <p class="auth-description">
                 Log in om toegang te krijgen tot de robotarm.
             </p>
 
+
             <!-- LOGIN -->
+
             <form id="login-form">
+
                 <label>
+
                     E-mailadres
+
                     <input type="email"
                            id="login-email"
                            autocomplete="email"
                            required>
+
                 </label>
 
+
                 <label>
+
                     Wachtwoord
+
                     <input type="password"
                            id="login-password"
                            autocomplete="current-password"
                            required>
+
                 </label>
 
-                <button class="primary-button" type="submit">
+
+                <button class="primary-button"
+                        type="submit">
+
                     Inloggen
+
                 </button>
+
             </form>
 
+
             <!-- REGISTER -->
-            <form id="register-form" hidden>
+
+            <form id="register-form"
+                  hidden>
+
                 <label>
+
                     Gebruikersnaam
+
                     <input type="text"
                            id="register-username"
                            minlength="3"
                            required>
+
                 </label>
 
+
                 <label>
+
                     E-mailadres
+
                     <input type="email"
                            id="register-email"
+                           autocomplete="email"
                            required>
+
                 </label>
 
+
                 <label>
+
                     Wachtwoord
+
                     <input type="password"
                            id="register-password"
                            minlength="8"
+                           autocomplete="new-password"
                            required>
+
                 </label>
 
-                <button class="primary-button" type="submit">
+
+                <button class="primary-button"
+                        type="submit">
+
                     Account aanmaken
+
                 </button>
+
             </form>
 
-            <p class="auth-error" id="auth-error"></p>
 
-            <button class="auth-switch" id="auth-switch" type="button">
+            <p class="auth-error"
+               id="auth-error">
+            </p>
+
+
+            <button class="auth-switch"
+                    id="auth-switch"
+                    type="button">
+
                 Nog geen account? Registreren
+
             </button>
+
         </div>
+
     </section>
-    <main class="app-shell" id="dashboard" hidden>
+
+
+
+    <!-- ==================================================
+         DASHBOARD
+    =================================================== -->
+
+    <main class="app-shell"
+          id="dashboard"
+          hidden>
+
+
+        <!-- ==================================================
+             TOPBAR
+        =================================================== -->
+
         <header class="topbar">
-            <a class="brand" href="/" aria-label="Robot Arm Control home">
-                <span class="brand-mark">RA</span>
-                <span><strong>Robot Arm</strong><small>CONTROL DECK</small></span>
+
+            <a class="brand"
+               href="/"
+               aria-label="Robot Arm Control home">
+
+                <span class="brand-mark">
+                    RA
+                </span>
+
+                <span>
+
+                    <strong>
+                        Robot Arm
+                    </strong>
+
+                    <small>
+                        CONTROL DECK
+                    </small>
+
+                </span>
+
             </a>
-            <div class="connection-state" id="connection-state"><span class="pulse"></span><span id="connection-label">Verbinden...</span></div>
+
+
+            <div class="connection-state"
+                 id="connection-state">
+
+                <span class="pulse"></span>
+
+                <span id="connection-label">
+                    Verbinden...
+                </span>
+
+            </div>
+
         </header>
 
+
+
+        <!-- ==================================================
+             INTRO
+        =================================================== -->
+
         <section class="intro-row">
+
             <div>
-                <p class="eyebrow">OPERATIONS / MANUAL MODE</p>
-                <h1>Bedien je robotarm.</h1>
-                <p class="lede">Stuur elke servo afzonderlijk en volg de laatste bewegingen in real time.</p>
+
+                <p class="eyebrow">
+                    OPERATIONS / MANUAL MODE
+                </p>
+
+                <h1>
+                    Bedien je robotarm.
+                </h1>
+
+                <p class="lede">
+                    Stuur elke servo afzonderlijk en volg
+                    de laatste bewegingen in real time.
+                </p>
+
             </div>
-            <button class="emergency-button" id="emergency-button" type="button"><span class="stop-icon"></span> Noodstop</button>
+
+
+            <button class="emergency-button"
+                    id="emergency-button"
+                    type="button">
+
+                <span class="stop-icon"></span>
+
+                Noodstop
+
+            </button>
+
         </section>
+
+
+
+        <!-- ==================================================
+             WORKSPACE
+        =================================================== -->
 
         <section class="workspace">
+
+
+            <!-- ==================================================
+                 SERVO CONTROLS
+            =================================================== -->
+
             <div class="control-panel panel">
+
                 <div class="panel-heading">
-                    <div><p class="eyebrow">MANUAL CONTROL</p><h2>Servo inputs</h2></div>
-                    <label class="select-wrap"><span class="sr-only">Selecteer robot</span><select id="robot-select"><option value="">Robot laden...</option></select></label>
+
+                    <div>
+
+                        <p class="eyebrow">
+                            MANUAL CONTROL
+                        </p>
+
+                        <h2>
+                            Servo inputs
+                        </h2>
+
+                    </div>
+
+
+                    <label class="select-wrap">
+
+                        <span class="sr-only">
+                            Selecteer robot
+                        </span>
+
+                        <select id="robot-select">
+
+                            <option value="">
+                                Robot laden...
+                            </option>
+
+                        </select>
+
+                    </label>
+
                 </div>
 
-                <div class="servo-list" id="servo-list">
-                    <p class="empty-state">Robotdata wordt geladen...</p>
+
+                <div class="servo-list"
+                     id="servo-list">
+
+                    <p class="empty-state">
+                        Robotdata wordt geladen...
+                    </p>
+
                 </div>
-                <button class="primary-button" id="send-all" type="button"><span class="send-icon"></span> Alle waarden verzenden</button>
-                <p class="feedback" id="feedback" role="status"></p>
+
+
+                <button class="primary-button"
+                        id="send-all"
+                        type="button">
+
+                    <span class="send-icon"></span>
+
+                    Alle waarden verzenden
+
+                </button>
+
+
+                <p class="feedback"
+                   id="feedback"
+                   role="status">
+                </p>
+
             </div>
 
+
+
+            <!-- ==================================================
+                 LIVE SIMULATION
+            =================================================== -->
+
             <aside class="visual-panel panel">
-                <div class="panel-heading"><div><p class="eyebrow">LIVE PREVIEW</p><h2>Arm position</h2></div><span class="angle-readout" id="angle-readout">Shoulder 90 deg</span></div>
-                <div class="arm-stage" aria-label="2D-simulatie van de schouder en elleboog van de robotarm">
-                    <svg class="arm-simulation" viewBox="0 0 360 280" role="img" aria-labelledby="simulation-title simulation-description">
-                        <title id="simulation-title">Robotarm simulatie</title>
-                        <desc id="simulation-description">Een vaste basis met een bewegende schouder, bovenarm, elleboog en onderarm.</desc>
-                        <line class="simulation-ground" x1="45" y1="250" x2="315" y2="250"></line>
-                        <rect class="simulation-base" x="135" y="238" width="90" height="16" rx="4"></rect>
-                        <line class="simulation-upper-arm" id="simulation-upper-arm" x1="180" y1="232" x2="180" y2="132"></line>
-                        <line class="simulation-lower-arm" id="simulation-lower-arm" x1="180" y1="132" x2="180" y2="52"></line>
-                        <circle class="simulation-joint" id="simulation-shoulder" cx="180" cy="232" r="13"></circle>
-                        <circle class="simulation-joint" id="simulation-elbow" cx="180" cy="132" r="11"></circle>
-                        <text class="simulation-label" id="shoulder-angle-label" x="18" y="28">Shoulder 90 deg</text>
-                        <text class="simulation-label" id="elbow-angle-label" x="18" y="49">Elbow 90 deg</text>
-                    </svg>
+
+                <div class="panel-heading">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            LIVE PREVIEW
+                        </p>
+
+                        <h2>
+                            Arm position
+                        </h2>
+
+                    </div>
+
+
+                    <span class="angle-readout"
+                          id="angle-readout">
+
+                        Shoulder 90 deg
+
+                    </span>
+
                 </div>
-                <div class="telemetry"><div><span>ACTIVE SERVO</span><strong id="active-servo">Base</strong></div><div><span>LAST UPDATE</span><strong id="last-update">--:--:--</strong></div></div>
+
+
+
+                <!-- ==================================================
+                     SVG ROBOT SIMULATION
+                =================================================== -->
+
+                <div class="arm-stage"
+                     aria-label="2D simulatie van de robotarm en gripper">
+
+
+                    <svg class="arm-simulation"
+                         viewBox="0 0 360 280"
+                         role="img"
+                         aria-labelledby="simulation-title simulation-description">
+
+
+                        <title id="simulation-title">
+                            Robotarm simulatie
+                        </title>
+
+
+                        <desc id="simulation-description">
+                            Een robotarm met bewegende schouder,
+                            elleboog en gripper.
+                        </desc>
+
+
+
+                        <!-- GROND -->
+
+                        <line class="simulation-ground"
+                              x1="45"
+                              y1="250"
+                              x2="315"
+                              y2="250">
+                        </line>
+
+
+
+                        <!-- BASIS -->
+
+                        <rect class="simulation-base"
+                              x="135"
+                              y="238"
+                              width="90"
+                              height="16"
+                              rx="4">
+                        </rect>
+
+
+
+                        <!-- BOVENARM -->
+
+                        <line class="simulation-upper-arm"
+                              id="simulation-upper-arm"
+                              x1="180"
+                              y1="232"
+                              x2="180"
+                              y2="132">
+                        </line>
+
+
+
+                        <!-- ONDERARM -->
+
+                        <line class="simulation-lower-arm"
+                              id="simulation-lower-arm"
+                              x1="180"
+                              y1="132"
+                              x2="180"
+                              y2="52">
+                        </line>
+
+
+
+                        <!-- SCHOUDER -->
+
+                        <circle class="simulation-joint"
+                                id="simulation-shoulder"
+                                cx="180"
+                                cy="232"
+                                r="13">
+                        </circle>
+
+
+
+                        <!-- ELLEBOOG -->
+
+                        <circle class="simulation-joint"
+                                id="simulation-elbow"
+                                cx="180"
+                                cy="132"
+                                r="11">
+                        </circle>
+
+
+
+                        <!-- ==================================================
+                             GRIPPER
+
+                             Deze groep wordt door JavaScript naar het
+                             uiteinde van de arm verplaatst.
+
+                             0 graden   = open
+                             180 graden = dicht
+                        =================================================== -->
+
+                        <g id="simulation-gripper">
+
+
+                            <!-- POLS -->
+
+                            <circle class="simulation-wrist"
+                                    cx="0"
+                                    cy="0"
+                                    r="7">
+                            </circle>
+
+
+                            <!-- VERBINDING -->
+
+                            <line class="simulation-gripper-connector"
+                                  x1="0"
+                                  y1="0"
+                                  x2="18"
+                                  y2="0">
+                            </line>
+
+
+
+                            <!-- LINKER VINGER -->
+
+                            <g id="simulation-gripper-left"
+                               transform="rotate(-15)">
+
+                                <line class="simulation-finger"
+                                      x1="18"
+                                      y1="0"
+                                      x2="43"
+                                      y2="-18">
+                                </line>
+
+                                <line class="simulation-finger-tip"
+                                      x1="43"
+                                      y1="-18"
+                                      x2="52"
+                                      y2="-11">
+                                </line>
+
+                            </g>
+
+
+
+                            <!-- RECHTER VINGER -->
+
+                            <g id="simulation-gripper-right"
+                               transform="rotate(15)">
+
+                                <line class="simulation-finger"
+                                      x1="18"
+                                      y1="0"
+                                      x2="43"
+                                      y2="18">
+                                </line>
+
+                                <line class="simulation-finger-tip"
+                                      x1="43"
+                                      y1="18"
+                                      x2="52"
+                                      y2="11">
+                                </line>
+
+                            </g>
+
+
+                        </g>
+
+
+
+                        <!-- ==================================================
+                             LABELS
+                        =================================================== -->
+
+                        <text class="simulation-label"
+                              id="shoulder-angle-label"
+                              x="18"
+                              y="28">
+
+                            Shoulder 90 deg
+
+                        </text>
+
+
+                        <text class="simulation-label"
+                              id="elbow-angle-label"
+                              x="18"
+                              y="49">
+
+                            Elbow 90 deg
+
+                        </text>
+
+
+                        <text class="simulation-label"
+                              id="gripper-state-label"
+                              x="18"
+                              y="70">
+
+                            Gripper: Half gesloten
+
+                        </text>
+
+
+                    </svg>
+
+                </div>
+
+
+
+                <!-- ==================================================
+                     TELEMETRY
+                =================================================== -->
+
+                <div class="telemetry">
+
+                    <div>
+
+                        <span>
+                            ACTIVE SERVO
+                        </span>
+
+                        <strong id="active-servo">
+                            Base
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            LAST UPDATE
+                        </span>
+
+                        <strong id="last-update">
+                            --:--:--
+                        </strong>
+
+                    </div>
+
+                </div>
+
             </aside>
+
         </section>
 
+
+
+        <!-- ==================================================
+             COMMAND HISTORY
+        =================================================== -->
+
         <section class="history-panel panel">
-            <div class="panel-heading"><div><p class="eyebrow">COMMAND LOG</p><h2>Recente bewegingen</h2></div><button class="text-button" id="refresh-button" type="button">Vernieuwen</button></div>
-            <div class="command-table" id="command-table"><p class="empty-state">Nog geen commando's gevonden.</p></div>
+
+            <div class="panel-heading">
+
+                <div>
+
+                    <p class="eyebrow">
+                        COMMAND LOG
+                    </p>
+
+                    <h2>
+                        Recente bewegingen
+                    </h2>
+
+                </div>
+
+
+                <button class="text-button"
+                        id="refresh-button"
+                        type="button">
+
+                    Vernieuwen
+
+                </button>
+
+            </div>
+
+
+            <div class="command-table"
+                 id="command-table">
+
+                <p class="empty-state">
+                    Nog geen commando's gevonden.
+                </p>
+
+            </div>
+
         </section>
-        <footer><span>ROBOT ARM CONTROL</span><span>API STATUS <b id="footer-status">CHECKING</b></span></footer>
+
+
+
+        <!-- ==================================================
+             FOOTER
+        =================================================== -->
+
+        <footer>
+
+            <span>
+                ROBOT ARM CONTROL
+            </span>
+
+            <span>
+
+                API STATUS
+
+                <b id="footer-status">
+                    CHECKING
+                </b>
+
+            </span>
+
+        </footer>
+
     </main>
+
+
+
+    <!-- ==================================================
+         JAVASCRIPT
+    =================================================== -->
+
     <script src="app.js"></script>
+
 </body>
+
 </html>
